@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#065f46" />
+  <title>DIB Finance Pro</title>
+  <link rel="manifest" href="manifest.json" />
+  <script src="https://tailwindcss.com"></script>
+  <style>
+    body { -webkit-tap-highlight-color: transparent; font-family: system-ui, -apple-system, sans-serif; }
+  </style>
+</head>
+<body class="bg-slate-100 text-slate-900 pb-24">
+  <header class="bg-emerald-900 text-white px-4 py-4 sticky top-0 z-20 shadow-md flex justify-between items-center">
+    <div>
+      <h1 class="text-lg font-bold tracking-tight">DIB Finance Pro</h1>
+      <p class="text-xs text-emerald-200">Dubai Personal Finance Advisor Suite</p>
+    </div>
+    <button id="installBtn" class="hidden bg-amber-400 text-emerald-950 text-xs font-bold px-3 py-1.5 rounded-full shadow">+ Install App</button>
+  </header>
+
+  <main class="max-w-md mx-auto p-4 space-y-4">
+    <section id="tab-calc" class="space-y-4">
+      <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 space-y-3">
+        <h2 class="font-bold text-emerald-900 text-sm uppercase tracking-wider">1. Client Profile &amp; Income</h2>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="text-xs font-medium text-slate-600">Residency</label>
+            <select id="nationality" class="w-full mt-1 p-2.5 bg-slate-50 border rounded-xl text-sm font-medium" onchange="calculate()">
+              <option value="expat">UAE Expat (Max 3M)</option>
+              <option value="national">UAE National (Max 5M)</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-xs font-medium text-slate-600">Salary Transfer</label>
+            <select id="stl" class="w-full mt-1 p-2.5 bg-slate-50 border rounded-xl text-sm font-medium" onchange="calculate()">
+              <option value="yes">Yes (DIB STL)</option>
+              <option value="no">Non-STL</option>
+            </select>
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="text-xs font-medium text-slate-600">Monthly Salary (AED)</label>
+            <input type="number" id="salary" value="15000" class="w-full mt-1 p-2.5 bg-slate-50 border rounded-xl text-sm font-bold" oninput="calculate()" />
+          </div>
+          <div>
+            <label class="text-xs font-medium text-slate-600">Tenure (Months)</label>
+            <input type="number" id="tenure" value="48" max="48" min="12" class="w-full mt-1 p-2.5 bg-slate-50 border rounded-xl text-sm font-bold" oninput="calculate()" />
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="text-xs font-medium text-slate-600">Existing EMIs (AED)</label>
+            <input type="number" id="emis" value="0" class="w-full mt-1 p-2.5 bg-slate-50 border rounded-xl text-sm" oninput="calculate()" />
+          </div>
+          <div>
+            <label class="text-xs font-medium text-slate-600">Total CC Limits (AED)</label>
+            <input type="number" id="ccLimit" value="10000" class="w-full mt-1 p-2.5 bg-slate-50 border rounded-xl text-sm" oninput="calculate()" />
+          </div>
+        </div>
+        <div>
+          <label class="text-xs font-medium text-slate-600">Reducing Profit Rate (% p.a.)</label>
+          <input type="number" id="rate" value="6.99" step="0.1" class="w-full mt-1 p-2.5 bg-slate-50 border rounded-xl text-sm" oninput="calculate()" />
+        </div>
+      </div>
+
+      <div class="bg-emerald-950 text-white p-5 rounded-2xl shadow-lg space-y-3">
+        <div class="flex justify-between items-center">
+          <span class="text-xs uppercase tracking-wider text-emerald-300">Max Eligible Finance</span>
+          <span id="graceBadge" class="text-[11px] bg-emerald-800 px-2.5 py-0.5 rounded-full text-emerald-100">Up to 180 Days Grace</span>
+        </div>
+        <div id="maxFinance" class="text-3xl font-extrabold text-amber-400">AED 0</div>
+        <div class="grid grid-cols-2 gap-3 pt-2 border-t border-emerald-800 text-xs">
+          <div><span class="text-emerald-300 block">Available Monthly EMI</span><span id="availEmi" class="font-bold text-base">AED 0</span></div>
+          <div><span class="text-emerald-300 block">Current DBR (50% Cap)</span><span id="currentDbr" class="font-bold text-base">0%</span></div>
+        </div>
+        <button onclick="shareWhatsApp()" class="w-full mt-2 bg-emerald-500 hover:bg-emerald-400 text-emerald-950 font-bold py-3 rounded-xl text-sm shadow transition">Send Quote &amp; KYC List on WhatsApp</button>
+      </div>
+    </section>
+
+    <section id="tab-leads" class="hidden space-y-4">
+      <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 space-y-3">
+        <h2 class="font-bold text-emerald-900 text-sm uppercase tracking-wider">Add New Prospect</h2>
+        <input type="text" id="leadName" placeholder="Client Full Name" class="w-full p-2.5 bg-slate-50 border rounded-xl text-sm" />
+        <div class="grid grid-cols-2 gap-2">
+          <input type="tel" id="leadPhone" placeholder="050 XXXXXXX" class="w-full p-2.5 bg-slate-50 border rounded-xl text-sm" />
+          <input type="text" id="leadCompany" placeholder="Employer / Company" class="w-full p-2.5 bg-slate-50 border rounded-xl text-sm" />
+        </div>
+        <button onclick="saveLead()" class="w-full bg-emerald-800 text-white font-bold py-2.5 rounded-xl text-sm">+ Save Lead to Phone</button>
+      </div>
+      <div id="leadsList" class="space-y-2.5"></div>
+    </section>
+
+    <section id="tab-kyc" class="hidden space-y-3">
+      <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 space-y-2.5">
+        <h2 class="font-bold text-emerald-900 text-sm uppercase tracking-wider">UAE Personal Finance KYC</h2>
+        <ul class="text-sm space-y-2 text-slate-700">
+          <li>✅ Valid Emirates ID &amp; Passport Copy (with Residence Visa)</li>
+          <li>✅ Salary Certificate or Salary Transfer Letter (STL) addressed to DIB</li>
+          <li>✅ Last 3 to 6 Months Bank Statements (stamped/e-statement)</li>
+          <li>✅ Liability Letter (required only for loan buyout/consolidation)</li>
+          <li>✅ Security Cheque (as per bank credit policy)</li>
+        </ul>
+        <p class="text-[11px] text-slate-400 pt-2 border-t">Note: Subject to DIB credit policy, company listing status, and UAE Central Bank 50% DBR regulations.</p>
+      </div>
+    </section>
+  </main>
+
+  <nav class="fixed bottom-0 inset-x-0 bg-white border-t border-slate-200 flex justify-around py-2.5 z-20 max-w-md mx-auto">
+    <button onclick="switchTab('calc')" id="nav-calc" class="text-emerald-800 font-bold text-xs flex flex-col items-center"><span>🧮 Calculator</span></button>
+    <button onclick="switchTab('leads')" id="nav-leads" class="text-slate-500 font-medium text-xs flex flex-col items-center"><span>📋 My Leads</span></button>
+    <button onclick="switchTab('kyc')" id="nav-kyc" class="text-slate-500 font-medium text-xs flex flex-col items-center"><span>📄 KYC Docs</span></button>
+  </nav>
+
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js');
+    }
+
+    let deferredPrompt;
+    window.addEventListener('beforeinstallprompt', (event) => {
+      event.preventDefault();
+      deferredPrompt = event;
+      document.getElementById('installBtn').classList.remove('hidden');
+    });
+
+    document.getElementById('installBtn').addEventListener('click', async () => {
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        await deferredPrompt.userChoice;
+        deferredPrompt = null;
+        document.getElementById('installBtn').classList.add('hidden');
+      }
+    });
+
+    let latestQuoteText = '';
+    function calculate() {
+      const nat = document.getElementById('nationality').value;
+      const salary = parseFloat(document.getElementById('salary').value) || 0;
+      const tenure = Math.min(48, Math.max(6, parseInt(document.getElementById('tenure').value, 10) || 48));
+      const emis = parseFloat(document.getElementById('emis').value) || 0;
+      const ccLimit = parseFloat(document.getElementById('ccLimit').value) || 0;
+      const annualRate = parseFloat(document.getElementById('rate').value) || 6.99;
+
+      const maxCap = nat === 'national' ? 5000000 : 3000000;
+      document.getElementById('graceBadge').innerText = nat === 'national' ? 'Up to 240 Days Grace' : 'Up to 180 Days Grace';
+
+      const ccObligation = ccLimit * 0.05;
+      const totalObligations = emis + ccObligation;
+      const maxAllowedEmi = salary * 0.50;
+      const availEmi = Math.max(0, maxAllowedEmi - totalObligations);
+      const dbrPercent = salary > 0 ? ((totalObligations / salary) * 100).toFixed(1) : 0;
+      const monthlyRate = (annualRate / 100) / 12;
+      let eligibleAmount = 0;
+      if (availEmi > 0 && monthlyRate > 0) {
+        eligibleAmount = availEmi * ((1 - Math.pow(1 + monthlyRate, -tenure)) / monthlyRate);
+      }
+      eligibleAmount = Math.min(maxCap, Math.floor(eligibleAmount / 1000) * 1000);
+
+      document.getElementById('maxFinance').innerText = `AED ${eligibleAmount.toLocaleString()}`;
+      document.getElementById('availEmi').innerText = `AED ${Math.round(availEmi).toLocaleString()}/mo`;
+      document.getElementById('currentDbr').innerText = `${dbrPercent}%`;
+
+      latestQuoteText = `Assalamu Alaikum! Here is your estimated *DIB Personal Finance* quote:\n\n` +
+        `• *Estimated Finance:* AED ${eligibleAmount.toLocaleString()}\n` +
+        `• *Tenure:* ${tenure} Months\n` +
+        `• *Est. Monthly Installment:* AED ${Math.round(availEmi).toLocaleString()}\n` +
+        `• *First Installment Grace:* ${nat === 'national' ? 'Up to 240 days' : 'Up to 180 days'}\n\n` +
+        `*Required Documents:* Emirates ID, Passport/Visa, Salary Certificate/STL & 3-6 Months Bank Statement.\n` +
+        `_T&Cs apply. Subject to DIB credit approval._`;
+    }
+
+    function shareWhatsApp() {
+      window.open(`https://wa.me/?text=${encodeURIComponent(latestQuoteText)}`, '_blank');
+    }
+
+    function saveLead() {
+      const name = document.getElementById('leadName').value.trim();
+      const phone = document.getElementById('leadPhone').value.trim();
+      const company = document.getElementById('leadCompany').value.trim();
+      if (!name || !phone) return alert('Enter client name and phone number');
+      const leads = JSON.parse(localStorage.getItem('dib_leads') || '[]');
+      leads.unshift({
+        id: Date.now(),
+        name,
+        phone,
+        company: company || 'N/A',
+        quote: document.getElementById('maxFinance').innerText
+      });
+      localStorage.setItem('dib_leads', JSON.stringify(leads));
+      document.getElementById('leadName').value = '';
+      document.getElementById('leadPhone').value = '';
+      document.getElementById('leadCompany').value = '';
+      renderLeads();
+    }
+
+    function deleteLead(id) {
+      const leads = JSON.parse(localStorage.getItem('dib_leads') || '[]').filter((lead) => lead.id !== id);
+      localStorage.setItem('dib_leads', JSON.stringify(leads));
+      renderLeads();
+    }
+
+    function renderLeads() {
+      const leads = JSON.parse(localStorage.getItem('dib_leads') || '[]');
+      const container = document.getElementById('leadsList');
+      if (!leads.length) {
+        container.textContent = 'No saved prospects yet.';
+        return;
+      }
+      container.innerHTML = leads.map((lead) => `
+        <div class="bg-white p-3.5 rounded-xl border border-slate-200 flex justify-between items-center shadow-sm">
+          <div>
+            <div class="font-bold text-sm text-slate-900">${lead.name}</div>
+            <div class="text-xs text-slate-500">${lead.company} • ${lead.phone}</div>
+            <div class="text-xs font-bold text-emerald-700 mt-1">Est: ${lead.quote}</div>
+          </div>
+          <div class="flex gap-1.5">
+            <a href="https://wa.me/${lead.phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(latestQuoteText)}" target="_blank" rel="noopener noreferrer" class="bg-emerald-100 text-emerald-800 text-xs font-bold px-3 py-2 rounded-lg">WhatsApp</a>
+            <button onclick="deleteLead(${Number(lead.id)})" class="bg-rose-50 text-rose-600 text-xs font-bold px-2.5 py-2 rounded-lg">✕</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function switchTab(tab) {
+      ['calc', 'leads', 'kyc'].forEach((currentTab) => {
+        document.getElementById(`tab-${currentTab}`).classList.toggle('hidden', currentTab !== tab);
+        document.getElementById(`nav-${currentTab}`).classList.toggle('text-emerald-800', currentTab === tab);
+        document.getElementById(`nav-${currentTab}`).classList.toggle('font-bold', currentTab === tab);
+        document.getElementById(`nav-${currentTab}`).classList.toggle('text-slate-500', currentTab !== tab);
+      });
+      if (tab === 'leads') renderLeads();
+    }
+
+    calculate();
+  </script>
+</body>
+</html>
